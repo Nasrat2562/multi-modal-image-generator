@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion Result - Ghibli Converter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Conversion Complete!</h1>
+            <p class="subtitle">Your Ghibli masterpiece is ready</p>
+        </header>
+
+        <div class="result-section">
+            {% if status.status == 'completed' %}
+                <div class="success-message">
+                    <div class="success-icon">✅</div>
+                    <h3>Successfully converted to Ghibli style!</h3>
+                    <p>Your image has been transformed into a beautiful Studio Ghibli artwork.</p>
+                </div>
+
+                <div class="download-section">
+                    <a href="{{ url_for('download_file', conversion_id=conversion_id) }}" class="download-btn">
+                        📥 Download Ghibli Art
+                    </a>
+                    <a href="{{ url_for('index') }}" class="convert-another-btn">
+                        🎨 Convert Another Image
+                    </a>
+                </div>
+            {% elif status.status == 'processing' %}
+                <div class="processing-message">
+                    <div class="loading-spinner"></div>
+                    <h3>Still processing...</h3>
+                    <p>{{ status.message }}</p>
+                </div>
+            {% else %}
+                <div class="error-message">
+                    <div class="error-icon">❌</div>
+                    <h3>Conversion Failed</h3>
+                    <p>{{ status.message }}</p>
+                    <a href="{{ url_for('index') }}" class="retry-btn">🔄 Try Again</a>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if status.status == 'processing' %}
+        <script>
+            setTimeout(function() {
+                window.location.reload();
+            }, 5000);
+        </script>
+        {% endif %}
+    </div>
+</body>
+</html>
