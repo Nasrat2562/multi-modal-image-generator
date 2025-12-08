@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Image Generator</title>
+    <style>
+        :root { --primary: #8b5cf6; --secondary: #06b6d4; --dark: #0f172a; --light: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; width: 100%; max-width: 700px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); }
+        h1 { text-align: center; font-size: 28px; margin-bottom: 5px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }
+        .status { padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 20px; font-weight: 600; }
+        .loading { background: #fff3cd; color: #856404; }
+        .ready { background: #d4edda; color: #155724; }
+        input, textarea, select, button { width: 100%; padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; transition: 0.3s; }
+        textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
+        button { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; border: none; cursor: pointer; font-weight: 600; transition: transform 0.3s; }
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-download { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            margin-top: 10px; 
+        }
+        .btn-download:hover:not(:disabled) { 
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); 
+        }
+        .examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+        .example-btn { background: rgba(139, 92, 246, 0.1); color: var(--primary); border: 1px solid rgba(139, 92, 246, 0.3); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.3s; }
+        .example-btn:hover { background: rgba(139, 92, 246, 0.2); }
+        .loading-spinner { display: none; text-align: center; padding: 30px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .results { margin-top: 25px; text-align: center; }
+        .result-img { max-width: 100%; max-height: 500px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .result-img:hover { transform: scale(1.01); }
+        .info { margin-top: 20px; padding: 15px; background: #e8f4fd; border-radius: 10px; color: #1e40af; font-size: 14px; }
+        .flex-row { display: flex; gap: 15px; }
+        .flex-row > * { flex: 1; }
+        .error { margin-top: 15px; padding: 12px; background: #fde8e8; border-radius: 10px; color: #c81e1e; display: none; }
+        .image-actions { 
+            display: flex; 
+            gap: 10px; 
+            margin-top: 15px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+        }
+        .action-btn { 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            transition: all 0.3s; 
+        }
+        .btn-view-folder { 
+            background: #3b82f6; 
+            color: white; 
+        }
+        .btn-view-folder:hover { 
+            background: #2563eb; 
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); 
+        }
+        .folder-stats { 
+            margin-top: 15px; 
+            padding: 10px; 
+            background: #f0f9ff; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            color: #0369a1; 
+            display: none; 
+        }
+        .filename { 
+            font-family: monospace; 
+            background: #f1f5f9; 
+            padding: 5px 10px; 
+            border-radius: 6px; 
+            margin: 10px 0; 
+            font-size: 13px; 
+            word-break: break-all; 
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎨 AI Image Generator</h1>
+        <p class="subtitle">Transform words into stunning visuals with Stable Diffusion</p>
+        
+        <div class="status loading" id="status">Loading AI Model...</div>
+        
+        <div class="examples">
+            <div class="example-btn" onclick="setPrompt('Majestic dragon flying over castle at sunset')">🐉 Dragon</div>
+            <div class="example-btn" onclick="setPrompt('Cyberpunk samurai in neon Tokyo')">🤖 Cyberpunk</div>
+            <div class="example-btn" onclick="setPrompt('Zen garden with cherry blossoms')">🌸 Zen Garden</div>
+            <div class="example-btn" onclick="setPrompt('Astronaut floating in colorful nebula')">🚀 Astronaut</div>
+        </div>
+        
+        <textarea id="prompt" placeholder="Describe your vision in detail..."></textarea>
+        
+        <div class="flex-row">
+            <select id="style">
+                <option value="realistic">🎨 Realistic</option>
+                <option value="anime">👾 Anime</option>
+                <option value="fantasy">🧚 Fantasy</option>
+                <option value="digital_art">🖌️ Digital Art</option>
+                <option value="cinematic">🎬 Cinematic</option>
+                <option value="scifi">🚀 Sci-Fi</option>
+            </select>
+            <select id="preset">
+                <option value="fast">⚡ Fast (20 steps)</option>
+                <option value="standard" selected>✨ Standard (25 steps)</option>
+                <option value="quality">🌟 Quality (30 steps)</option>
+            </select>
+        </div>
+        
+        <button id="generateBtn" onclick="generateImage()" disabled>✨ Generate Image</button>
+        
+        <div class="loading-spinner" id="loading">
+            <div class="spinner"></div>
+            <p>Creating your masterpiece with AI...</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="results" id="results"></div>
+        <div class="image-actions" id="imageActions" style="display: none;">
+            <button class="action-btn btn-download" onclick="downloadImage()">
+                ⬇️ Download Image
+            </button>
+            <button class="action-btn btn-view-folder" onclick="viewOutputFolder()">
+                📁 Open Output Folder
+            </button>
+        </div>
+        
+        <div class="folder-stats" id="folderStats"></div>
+        <div class="info" id="info"></div>
+    </div>
+
+    <script>
+        let isModelReady = false;
+        let currentImageData = null;
+        
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                const statusEl = document.getElementById('status');
+                if (data.ready) {
+                    statusEl.className = 'ready';
+                    statusEl.innerHTML = `✅ AI Ready (${data.device.toUpperCase()})<br>
+                                         <small>Output folder: ${data.output_folder}</small>`;
+                    document.getElementById('generateBtn').disabled = false;
+                    isModelReady = true;
+                    updateFolderStats();
+                } else if (data.status === 'loading_model') {
+                    statusEl.className = 'loading';
+                    statusEl.textContent = '📥 Loading AI model... Please wait';
+                    setTimeout(checkStatus, 5000);
+                } else {
+                    setTimeout(checkStatus, 3000);
+                }
+            } catch (error) {
+                console.log('Status check failed:', error);
+                setTimeout(checkStatus, 5000);
+            }
+        }
+        
+        function setPrompt(text) {
+            document.getElementById('prompt').value = text;
+        }
+        
+        async function generateImage() {
+            if (!isModelReady) {
+                showError('AI model is still loading. Please wait...');
+                return;
+            }
+            
+            const prompt = document.getElementById('prompt').value.trim();
+            const style = document.getElementById('style').value;
+            const preset = document.getElementById('preset').value;
+            
+            if (!prompt) {
+                showError('Please enter a description');
+                return;
+            }
+            
+            // Clear previous
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('info').innerHTML = '';
+            document.getElementById('imageActions').style.display = 'none';
+            hideError();
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('generateBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        style: style,
+                        preset: preset
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Store image data for download
+                    currentImageData = data;
+                    
+                    // Show image
+                    document.getElementById('results').innerHTML = 
+                        `<img src="${data.images[0]}" class="result-img" alt="AI Generated Image">
+                         <div class="filename">Saved as: ${data.filename}</div>`;
+                    
+                    // Show download button
+                    document.getElementById('imageActions').style.display = 'flex';
+                    
+                    // Show info
+                    document.getElementById('info').innerHTML = 
+                        `✨ Generated in ${data.time}s on ${data.device.toUpperCase()}<br>
+                         <strong>Original Prompt:</strong> ${data.prompt}<br>
+                         <strong>Style:</strong> ${data.style} | <strong>Preset:</strong> ${data.preset}<br>
+                         <strong>File saved:</strong> ${data.filepath}`;
+                    
+                    // Update folder stats
+                    updateFolderStats();
+                } else {
+                    showError('Error: ' + (data.error || 'Failed to generate image'));
+                }
+            } catch (error) {
+                showError('Failed to connect to server. Make sure it is running on port 5001.');
+                console.error('Generation error:', error);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+        
+        function downloadImage() {
+            if (!currentImageData || !currentImageData.download_url) {
+                showError('No image available to download');
+                return;
+            }
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.href = currentImageData.download_url;
+            link.download = currentImageData.filename.replace('ai_image_', 'ai_art_');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show confirmation
+            showMessage('Download started!', 'success');
+        }
+        
+        async function viewOutputFolder() {
+            try {
+                // Try to open folder via API (for future enhancement)
+                const response = await fetch('/api/list_images');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('folderStats').style.display = 'block';
+                    document.getElementById('folderStats').innerHTML = 
+                        `📁 <strong>Output Folder:</strong> ${data.folder}<br>
+                         🖼️ <strong>Total Images:</strong> ${data.count}<br>
+                         ${data.count > 0 ? 
+                           `<small>Latest: ${data.images[0].filename}</small>` : 
+                           `<small>No images yet. Generate some!</small>`}`;
+                    
+                    // Scroll to folder stats
+                    document.getElementById('folderStats').scrollIntoView({behavior: 'smooth'});
+                }
+            } catch (error) {
+                showMessage('Cannot access folder list', 'warning');
+            }
+        }
+        
+        async function updateFolderStats() {
+            try {
+                const response = await fetch('/api/list_images');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const statusEl = document.getElementById('status');
+                    if (isModelReady) {
+                        statusEl.innerHTML = `✅ AI Ready (${currentImageData?.device || 'CPU'})<br>
+                                             <small>Output folder: ${data.folder} | Images: ${data.count}</small>`;
+                    }
+                }
+            } catch (error) {
+                // Silently fail, it's not critical
+            }
+        }
+        
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+        
+        function showMessage(message, type = 'info') {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            errorEl.style.background = type === 'success' ? '#d1fae5' : 
+                                      type === 'warning' ? '#fef3c7' : '#e8f4fd';
+            errorEl.style.color = type === 'success' ? '#065f46' : 
+                                 type === 'warning' ? '#92400e' : '#1e40af';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        // Start checking status
+        checkStatus();
+        
+        // Make Enter key work in textarea (Ctrl+Enter to generate)
+        document.getElementById('prompt').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                generateImage();
+            }
+        });
+        
+        // Auto-focus on prompt field
+        document.getElementById('prompt').focus();
+        
+        // Check folder stats every 30 seconds
+        setInterval(updateFolderStats, 30000);
+    </script>
+</body>
+</html>
