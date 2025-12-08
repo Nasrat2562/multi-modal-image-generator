@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Studio Ghibli AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #4a90e2 0%, #7ed321 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #4a90e2;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(74, 144, 226, 0.05);
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .upload-area.drag-over {
+            border-color: #7ed321;
+            background: rgba(126, 211, 33, 0.1);
+        }
+        
+        .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #4a90e2;
+        }
+        
+        .camera-btn {
+            background: linear-gradient(135deg, #4a90e2, #7ed321);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .image-preview {
+            display: none;
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 3px solid #4a90e2;
+            object-fit: contain;
+        }
+        
+        .camera-preview {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        video {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 3px solid #4a90e2;
+        }
+        
+        .capture-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .cancel-btn {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .prompt-box {
+            margin-top: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border: 2px solid rgba(226, 232, 240, 0.2);
+            border-radius: 12px;
+            font-size: 16px;
+            resize: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+        
+        textarea::placeholder {
+            color: #94a3b8;
+        }
+        
+        .transform-btn {
+            background: linear-gradient(135deg, #ff7bac 0%, #f8e71c 100%);
+            color: #1a1f2e;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        
+        .transform-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(243, 243, 243, 0.2);
+            border-top: 4px solid #4a90e2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .result-section {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 3px solid #7ed321;
+        }
+        
+        .error {
+            color: #f56565;
+            background: rgba(245, 101, 101, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="title">
+            <h1>🎨 Image + Prompt -> Image</h1>
+            <p class="subtitle">Transform your desire photos</p>
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="icon" id="uploadIcon">✨</div>
+            <h3 id="uploadTitle">Select or capture image</h3>
+            <p>or click to browse</p>
+            <button class="camera-btn" id="cameraBtn">
+                📸 Use Camera
+            </button>
+            <img class="image-preview" id="imagePreview" alt="Preview">
+            <div id="fileName"></div>
+        </div>
+        
+        <input type="file" id="fileInput" accept="image/*">
+        
+        <div class="camera-preview" id="cameraPreview">
+            <video id="video" autoplay playsinline></video>
+            <div>
+                <button class="capture-btn" id="captureBtn">
+                    📸 Capture
+                </button>
+                <button class="cancel-btn" id="cancelBtn">
+                    ✕ Cancel
+                </button>
+            </div>
+        </div>
+        
+        <div class="prompt-box">
+            <textarea placeholder="Describe transformation (optional)" id="prompt"></textarea>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <button class="transform-btn" id="transformBtn" disabled>
+            🎨 Transform to Art
+        </button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="statusMessage">Initializing...</p>
+        </div>
+        
+        <div class="result-section" id="resultSection">
+            <h3>✨ Your Masterpiece!</h3>
+            <img class="result-image" id="resultImage" alt="Result">
+            <div>
+                <button class="transform-btn" id="downloadBtn">
+                    💾 Download
+                </button>
+                <button class="camera-btn" id="newBtn" style="margin-top: 10px;">
+                    🎨 New Image
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <canvas id="canvas" style="display:none"></canvas>
+    
+    <script>
+        // DOM Elements
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const imagePreview = document.getElementById('imagePreview');
+        const fileName = document.getElementById('fileName');
+        const transformBtn = document.getElementById('transformBtn');
+        const loading = document.getElementById('loading');
+        const statusMessage = document.getElementById('statusMessage');
+        const resultSection = document.getElementById('resultSection');
+        const resultImage = document.getElementById('resultImage');
+        const errorDiv = document.getElementById('error');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const newBtn = document.getElementById('newBtn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const cameraPreview = document.getElementById('cameraPreview');
+        
+        // State
+        let currentFile = null;
+        let stream = null;
+        let conversionId = null;
+        
+        // Event Listeners
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
+        
+        cameraBtn.addEventListener('click', openCamera);
+        captureBtn.addEventListener('click', capturePhoto);
+        cancelBtn.addEventListener('click', closeCamera);
+        transformBtn.addEventListener('click', startConversion);
+        downloadBtn.addEventListener('click', downloadResult);
+        newBtn.addEventListener('click', resetForm);
+        
+        // Drag & Drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+        
+        // Functions
+        function handleFile(file) {
+            if (!file.type.match('image.*')) {
+                showError('Please select an image file');
+                return;
+            }
+            
+            if (file.size > 50 * 1024 * 1024) {
+                showError('File must be less than 50MB');
+                return;
+            }
+            
+            currentFile = file;
+            clearError();
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                document.getElementById('uploadIcon').style.display = 'none';
+                document.getElementById('uploadTitle').style.display = 'none';
+                fileName.textContent = file.name;
+                transformBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+            
+            closeCamera();
+        }
+        
+        function openCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = s;
+                    cameraPreview.style.display = 'block';
+                    uploadArea.style.display = 'none';
+                    clearError();
+                })
+                .catch(() => showError('Camera access denied'));
+        }
+        
+        function closeCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            cameraPreview.style.display = 'none';
+            uploadArea.style.display = 'flex';
+        }
+        
+        function capturePhoto() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                currentFile = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+                
+                imagePreview.src = URL.createObjectURL(blob);
+                imagePreview.style.display = 'block';
+                document.getElementById('uploadIcon').style.display = 'none';
+                document.getElementById('uploadTitle').style.display = 'none';
+                fileName.textContent = 'Camera Photo';
+                transformBtn.disabled = false;
+                
+                closeCamera();
+            }, 'image/jpeg', 0.9);
+        }
+        
+        async function startConversion() {
+            if (!currentFile) {
+                showError('Please select an image first');
+                return;
+            }
+            
+            const prompt = document.getElementById('prompt').value.trim();
+            
+            loading.style.display = 'block';
+            transformBtn.disabled = true;
+            resultSection.style.display = 'none';
+            statusMessage.textContent = 'Uploading...';
+            clearError();
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', currentFile);
+                if (prompt) formData.append('prompt', prompt);
+                
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Upload failed');
+                }
+                
+                conversionId = data.conversion_id;
+                statusMessage.textContent = 'Processing...';
+                
+                // Start checking status
+                checkStatus();
+                
+            } catch (error) {
+                showError(error.message);
+                loading.style.display = 'none';
+                transformBtn.disabled = false;
+            }
+        }
+        
+        async function checkStatus() {
+            if (!conversionId) return;
+            
+            try {
+                const response = await fetch(`/status/${conversionId}`);
+                const data = await response.json();
+                
+                if (data.status === 'completed') {
+                    loading.style.display = 'none';
+                    resultImage.src = `/download/${conversionId}?t=${Date.now()}`;
+                    resultSection.style.display = 'block';
+                } else if (data.status === 'error') {
+                    showError(data.message);
+                    loading.style.display = 'none';
+                    transformBtn.disabled = false;
+                } else if (data.status === 'processing') {
+                    statusMessage.textContent = data.message || 'Processing...';
+                    setTimeout(checkStatus, 2000);
+                }
+            } catch (error) {
+                console.error('Status check error:', error);
+                setTimeout(checkStatus, 2000);
+            }
+        }
+        
+        function downloadResult() {
+            if (conversionId) {
+                window.location.href = `/download/${conversionId}`;
+            }
+        }
+        
+        function resetForm() {
+            currentFile = null;
+            conversionId = null;
+            
+            fileInput.value = '';
+            document.getElementById('prompt').value = '';
+            imagePreview.src = '';
+            imagePreview.style.display = 'none';
+            document.getElementById('uploadIcon').style.display = 'block';
+            document.getElementById('uploadTitle').style.display = 'block';
+            fileName.textContent = '';
+            resultSection.style.display = 'none';
+            resultImage.src = '';
+            transformBtn.disabled = true;
+            clearError();
+        }
+        
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function clearError() {
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+        }
+    </script>
+</body>
+</html>
