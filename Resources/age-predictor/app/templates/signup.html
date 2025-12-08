@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up - Age Verification System</title>
+    <!-- REMOVED Font Awesome to avoid tracking prevention issues -->
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .signup-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .signup-form {
+            text-align: left;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .signup-btn {
+            background: #28a745;
+        }
+        .signup-btn:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .signup-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .back-btn {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+        .back-btn:hover {
+            background: #545b62;
+        }
+        
+        /* Camera Section Styles */
+        .camera-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #ddd;
+        }
+        .video-preview {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transform: scaleX(-1);
+            margin: 0 auto 15px;
+            display: block;
+            background: #000;
+        }
+        .capture-preview {
+            width: 100%;
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 3px solid #28a745;
+            margin: 0 auto 15px;
+            display: none;
+        }
+        .camera-controls {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .camera-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        /* Verification Result */
+        .verification-result {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        .verification-success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        .verification-failed {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .step-indicator:before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ddd;
+            z-index: 1;
+        }
+        .step {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            background: white;
+            padding: 0 10px;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .step.active .step-number {
+            background: #667eea;
+        }
+        .step.completed .step-number {
+            background: #28a745;
+        }
+        .step-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        .success-message {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* Countdown Styles */
+        .countdown-container {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .countdown-bar {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 8px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .countdown-progress {
+            width: 100%;
+            height: 100%;
+            background: #28a745;
+            border-radius: 10px;
+            transition: width 1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="logo">👤</div>
+        <h1>Create Account</h1>
+        <p class="subtitle">Age verification required (18+)</p>
+        
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-label">Information</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-label">Face Capture</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-label">Verification</div>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-number">4</div>
+                <div class="step-label">Complete</div>
+            </div>
+        </div>
+        
+        <!-- Step 1: User Information -->
+        <div class="signup-form" id="step1Form">
+            <div class="form-group">
+                <label for="fullName">Full Name *</label>
+                <input type="text" id="fullName" placeholder="Enter your full name" required>
+                <div class="error-message" id="nameError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+                <div class="error-message" id="emailError"></div>
+                <div class="success-message" id="emailSuccess"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" placeholder="Create a password (min 6 characters)" required minlength="6">
+                <div class="error-message" id="passwordError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password *</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+                <div class="error-message" id="confirmPasswordError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="dob">Date of Birth *</label>
+                <input type="date" id="dob" required>
+                <div class="error-message" id="dobError"></div>
+            </div>
+            
+            <div class="age-warning" style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 10px; margin: 15px 0; text-align: center;">
+                <strong>⚠️ Important:</strong> You must be 18+ to sign up. Age verification is mandatory.
+            </div>
+            
+            <button class="btn signup-btn" onclick="validateStep1()">Next: Face Capture →</button>
+            <button class="btn back-btn" onclick="goToLogin()">← Back to Login</button>
+        </div>
+        
+        <!-- Step 2: Face Capture -->
+        <div class="signup-form" id="step2Form" style="display: none;">
+            <div class="camera-section">
+                <h3 style="text-align: center; margin-bottom: 15px;">📷 Face Capture for Age Verification</h3>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                    We need to verify you're 18+ using facial recognition
+                </p>
+                
+                <video id="video" class="video-preview" autoplay playsinline></video>
+                <img id="capturePreview" class="capture-preview" alt="Capture Preview">
+                
+                <div class="camera-controls">
+                    <button class="camera-btn btn-primary" id="startCameraBtn" onclick="startCamera()">
+                        📷 Start Camera
+                    </button>
+                    <button class="camera-btn btn-success" id="captureBtn" onclick="capturePhoto()" disabled>
+                        📸 Capture Photo
+                    </button>
+                    <button class="camera-btn btn-danger" id="stopCameraBtn" onclick="stopCamera()" disabled>
+                        ⏹️ Stop Camera
+                    </button>
+                </div>
+                
+                <div class="verification-result" id="captureResult">
+                    <div id="captureMessage"></div>
+                </div>
+            </div>
+            
+            <div class="loading" id="captureLoading">
+                <div class="spinner"></div>
+                <p>Processing image...</p>
+            </div>
+            
+            <!-- FIXED: Changed onclick from verifyAge() to nextStep() -->
+            <button class="btn signup-btn" id="verifyAgeBtn" onclick="nextStep()" disabled>
+                Next: Verify Age →
+            </button>
+            <button class="btn back-btn" onclick="prevStep()">← Back</button>
+        </div>
+        
+        <!-- Step 3: Age Verification -->
+        <div class="signup-form" id="step3Form" style="display: none;">
+            <div class="loading" id="verificationLoading">
+                <div class="spinner"></div>
+                <p>Verifying age using AI...</p>
+                <p><small>This may take a few seconds</small></p>
+            </div>
+            
+            <div class="verification-result" id="verificationResult">
+                <div id="verificationIcon" style="font-size: 40px; margin-bottom: 10px;"></div>
+                <div id="verificationMessage" style="font-size: 18px; font-weight: bold; margin-bottom: 10px;"></div>
+                <div id="ageDisplay" style="font-size: 24px; font-weight: bold; margin: 10px 0;"></div>
+                <div id="verificationDetails"></div>
+            </div>
+            
+            <button class="btn signup-btn" id="completeSignupBtn" onclick="completeSignup()" style="display: none;">
+                Complete Signup
+            </button>
+            <button class="btn back-btn" id="retryVerificationBtn" onclick="retryVerification()" style="display: none;">
+                ← Retry Verification
+            </button>
+        </div>
+        
+        <!-- Step 4: Complete -->
+        <div class="signup-form" id="step4Form" style="display: none; text-align: center;">
+            <div style="font-size: 60px; margin-bottom: 20px; color: #28a745;">✅</div>
+            <h2 style="color: #28a745;">Account Created Successfully!</h2>
+            <p id="welcomeMessage" style="margin: 20px 0; font-size: 16px;"></p>
+            
+            <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                <p style="color: #2e7d32; margin-bottom: 10px;">
+                    ✅ Age verified: <strong id="verifiedAgeDisplay"></strong> years
+                </p>
+                <p style="color: #666; font-size: 14px;">
+                    ✅ Account activated successfully
+                </p>
+            </div>
+            
+            <div class="countdown-container">
+                <p style="color: #666; margin-bottom: 15px;">
+                    ⏱️ Redirecting to dashboard in <span id="countdown">3</span> seconds...
+                </p>
+                <div class="countdown-bar">
+                    <div class="countdown-progress" id="countdownProgress"></div>
+                </div>
+            </div>
+            
+            <button class="btn signup-btn" onclick="goToDashboardNow()" style="background: #667eea;">
+                🚀 Go to Dashboard Now
+            </button>
+        </div>
+    </div>
+
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <script>
+            let currentStep = 1;
+        let stream = null;
+        let capturedPhoto = null;
+        let userData = {};
+        let countdownInterval;
+        
+        // Step Navigation
+        function nextStep() {
+            document.getElementById(`step${currentStep}Form`).style.display = 'none';
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            
+            currentStep++;
+            
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}Form`).style.display = 'block';
+            
+            if (currentStep === 2) {
+                setTimeout(startCamera, 500);
+            } else if (currentStep === 3) {
+                startVerification();
+            }
+            
+            updateStepIndicator();
+        }
+        
+        function prevStep() {
+            document.getElementById(`step${currentStep}Form`).style.display = 'none';
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            
+            currentStep--;
+            
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            document.getElementById(`step${currentStep}Form`).style.display = 'block';
+            
+            if (currentStep === 2) {
+                setTimeout(startCamera, 500);
+            }
+            
+            updateStepIndicator();
+        }
+        
+        function updateStepIndicator() {
+            for (let i = 1; i <= 4; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('completed', 'active');
+                if (i < currentStep) step.classList.add('completed');
+                else if (i === currentStep) step.classList.add('active');
+            }
+        }
+        
+        // Step 1: Validation
+        async function validateStep1() {
+            clearErrors();
+            
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const dob = document.getElementById('dob').value;
+            
+            let isValid = true;
+            
+            // Validate full name
+            if (!fullName) {
+                showError('nameError', 'Full name is required');
+                isValid = false;
+            }
+            
+            // Validate email
+            if (!email) {
+                showError('emailError', 'Email is required');
+                isValid = false;
+            } else if (!isValidEmail(email)) {
+                showError('emailError', 'Please enter a valid email address');
+                isValid = false;
+            } else {
+                // Check if email exists
+                const checkResult = await checkEmailExists(email);
+                if (checkResult.exists) {
+                    showError('emailError', 'Email already registered');
+                    isValid = false;
+                } else {
+                    showSuccess('emailSuccess', '✓ Email available');
+                }
+            }
+            
+            // Validate password
+            if (!password) {
+                showError('passwordError', 'Password is required');
+                isValid = false;
+            } else if (password.length < 6) {
+                showError('passwordError', 'Password must be at least 6 characters');
+                isValid = false;
+            }
+            
+            // Validate confirm password
+            if (!confirmPassword) {
+                showError('confirmPasswordError', 'Please confirm your password');
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                showError('confirmPasswordError', 'Passwords do not match');
+                isValid = false;
+            }
+            
+            // Validate date of birth
+            if (!dob) {
+                showError('dobError', 'Date of birth is required');
+                isValid = false;
+            } else {
+                const birthDate = new Date(dob);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                
+                if (age < 18) {
+                    showError('dobError', 'You must be 18 or older to sign up');
+                    isValid = false;
+                }
+                
+                userData.calculatedAge = age;
+            }
+            
+            if (isValid) {
+                userData = {
+                    fullName: fullName,
+                    email: email,
+                    password: password,
+                    dob: dob,
+                    calculatedAge: userData.calculatedAge
+                };
+                nextStep();
+            }
+        }
+        
+        function clearErrors() {
+            document.querySelectorAll('.error-message, .success-message').forEach(el => {
+                el.style.display = 'none';
+                el.textContent = '';
+            });
+        }
+        
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        async function checkEmailExists(email) {
+            try {
+                const response = await fetch('/api/check-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Email check error:', error);
+                return { exists: false };
+            }
+        }
+        
+        // Camera Functions
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    }, 
+                    audio: false 
+                });
+                
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                
+                document.getElementById('startCameraBtn').disabled = true;
+                document.getElementById('captureBtn').disabled = false;
+                document.getElementById('stopCameraBtn').disabled = false;
+                
+            } catch (error) {
+                alert('Camera error: ' + error.message);
+            }
+        }
+        
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            const video = document.getElementById('video');
+            video.style.display = 'none';
+            video.srcObject = null;
+            
+            document.getElementById('startCameraBtn').disabled = false;
+            document.getElementById('captureBtn').disabled = true;
+            document.getElementById('stopCameraBtn').disabled = true;
+        }
+        
+        function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            canvas.toBlob(function(blob) {
+                capturedPhoto = blob;
+                
+                const capturePreview = document.getElementById('capturePreview');
+                capturePreview.src = URL.createObjectURL(blob);
+                capturePreview.style.display = 'block';
+                
+                video.style.display = 'none';
+                stopCamera();
+                
+                document.getElementById('verifyAgeBtn').disabled = false;
+                
+                showCaptureResult('✅ Photo captured successfully!', 'verification-success');
+            }, 'image/jpeg', 0.95);
+        }
+        
+        function showCaptureResult(message, className) {
+            const result = document.getElementById('captureResult');
+            result.className = `verification-result ${className}`;
+            result.style.display = 'block';
+            document.getElementById('captureMessage').textContent = message;
+        }
+        
+        // Age Verification - This function is called when moving to step 3
+        function startVerification() {
+            document.getElementById('verificationLoading').style.display = 'block';
+            
+            if (!capturedPhoto) {
+                showVerificationResult('No photo captured', false);
+                return;
+            }
+            
+            // Convert blob to file
+            const file = new File([capturedPhoto], 'face_verification.jpg', { type: 'image/jpeg' });
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('/verify-face', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Verification response:', data);
+                document.getElementById('verificationLoading').style.display = 'none';
+                handleVerificationResult(data);
+            })
+            .catch(error => {
+                console.error('Verification error:', error);
+                document.getElementById('verificationLoading').style.display = 'none';
+                showVerificationResult('Verification failed. Please try again.', false);
+            });
+        }
+        
+        function handleVerificationResult(data) {
+            const result = document.getElementById('verificationResult');
+            
+            console.log('Verification data received:', data);
+            
+            if (data.success && data.verified) {
+                // Age verified successfully
+                userData.verifiedAge = data.age;
+                userData.faceVerified = true;
+                
+                result.className = 'verification-result verification-success';
+                document.getElementById('verificationIcon').innerHTML = '✅';
+                document.getElementById('verificationMessage').textContent = 'AGE VERIFIED - 18+';
+                document.getElementById('ageDisplay').textContent = `Detected Age: ${data.age} years`;
+                
+                // SAFE confidence display
+                let confidenceDisplay = 'High';
+                if (data.confidence !== undefined && data.confidence !== null) {
+                    try {
+                        // Try to convert to number
+                        const confidenceNum = parseFloat(data.confidence);
+                        if (!isNaN(confidenceNum)) {
+                            confidenceDisplay = confidenceNum.toFixed(1) + '%';
+                        }
+                    } catch (e) {
+                        console.log('Confidence display error:', e);
+                        confidenceDisplay = 'High';
+                    }
+                }
+                
+                document.getElementById('verificationDetails').innerHTML = `
+                    <p>Your age has been successfully verified.</p>
+                    <p>AI Confidence: ${confidenceDisplay}</p>
+                `;
+                
+                document.getElementById('completeSignupBtn').style.display = 'block';
+                
+            } else {
+                // Age verification failed
+                result.className = 'verification-result verification-failed';
+                document.getElementById('verificationIcon').innerHTML = '❌';
+                document.getElementById('verificationMessage').textContent = 'AGE VERIFICATION FAILED';
+                document.getElementById('ageDisplay').textContent = data.age ? `Detected Age: ${data.age} years` : '';
+                
+                let errorMessage = data.error || 'You must be 18+ to sign up';
+                // Clean up error message if it contains JavaScript error
+                if (errorMessage.includes('toFixed') || errorMessage.includes('TypeError')) {
+                    errorMessage = 'Age verification failed. Please try again.';
+                }
+                
+                document.getElementById('verificationDetails').innerHTML = `
+                    <p>${errorMessage}</p>
+                    <p>Please try again with better lighting.</p>
+                `;
+                
+                document.getElementById('retryVerificationBtn').style.display = 'block';
+            }
+            
+            result.style.display = 'block';
+        }
+        
+        
+       function showVerificationResult(message, success) {
+            const result = document.getElementById('verificationResult');
+            result.className = success ? 'verification-result verification-success' : 'verification-result verification-failed';
+            document.getElementById('verificationMessage').textContent = message;
+            result.style.display = 'block';
+        }
+        
+        function retryVerification() {
+            document.getElementById('verificationResult').style.display = 'none';
+            document.getElementById('retryVerificationBtn').style.display = 'none';
+            document.getElementById('completeSignupBtn').style.display = 'none';
+            prevStep();
+        }
+        
+        // Countdown Functions
+        function startCountdown() {
+            let seconds = 3;
+            const countdownElement = document.getElementById('countdown');
+            const countdownProgress = document.getElementById('countdownProgress');
+            
+            // Display verified age
+            document.getElementById('verifiedAgeDisplay').textContent = 
+                userData.verifiedAge || userData.calculatedAge;
+            
+            // Start countdown
+            countdownInterval = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                countdownProgress.style.width = `${(seconds / 3) * 100}%`;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    goToDashboard();
+                }
+            }, 1000);
+        }
+        
+        function goToDashboardNow() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            goToDashboard();
+        }
+        
+async function completeSignup() {
+    try {
+        document.getElementById('completeSignupBtn').disabled = true;
+        document.getElementById('completeSignupBtn').innerHTML = 'Creating account...';
+        
+        // Prepare user data
+        const signupData = {
+            fullName: userData.fullName,
+            email: userData.email,
+            password: userData.password,
+            age: userData.verifiedAge || userData.calculatedAge
+        };
+        
+        console.log('📤 Sending signup data:', signupData);
+        
+        // Call signup API
+        const response = await fetch('/api/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(signupData)
+        });
+        
+        const result = await response.json();
+        console.log('📥 Signup response:', result);
+        
+        if (result.success) {
+            console.log('✅ Account created successfully!');
+            
+            // Store user data in localStorage for immediate login
+            localStorage.setItem('aiDashboardUser', userData.fullName);
+            localStorage.setItem('aiDashboardEmail', userData.email);
+            localStorage.setItem('aiDashboardAge', userData.verifiedAge || userData.calculatedAge);
+            localStorage.setItem('aiDashboardVerified', 'true');
+            localStorage.setItem('user_id', result.user.id);
+            localStorage.setItem('signup_completed', 'true');
+            localStorage.setItem('signup_timestamp', new Date().toISOString());
+            localStorage.setItem('logged_in', 'true');
+            
+            // Show success message
+            alert(`✅ Account created successfully!\nWelcome ${userData.fullName}!\n\nYou are now logged in.`);
+            
+            // Move to completion step
+            document.getElementById('step3Form').style.display = 'none';
+            document.getElementById('step3').classList.remove('active');
+            
+            currentStep = 4;
+            document.getElementById('step4').classList.add('completed');
+            document.getElementById('step4Form').style.display = 'block';
+            
+            // Update welcome message
+            document.getElementById('welcomeMessage').innerHTML = `
+                Welcome, <strong>${userData.fullName}</strong>!<br>
+                Your account has been created and verified.
+            `;
+            
+            // Start countdown for auto-redirect
+            startCountdown();
+            
+        } else {
+            alert('Signup failed: ' + result.error);
+            document.getElementById('completeSignupBtn').disabled = false;
+            document.getElementById('completeSignupBtn').innerHTML = 'Complete Signup';
+        }
+        
+    } catch (error) {
+        console.error('❌ Signup error:', error);
+        alert('Signup failed. Please try again.');
+        document.getElementById('completeSignupBtn').disabled = false;
+        document.getElementById('completeSignupBtn').innerHTML = 'Complete Signup';
+    }
+}
+        
+        async function goToDashboard() {
+            console.log('🚀 Attempting to go to dashboard...');
+            
+            // Store data in localStorage
+            localStorage.setItem('aiDashboardUser', userData.fullName);
+            localStorage.setItem('aiDashboardEmail', userData.email);
+            localStorage.setItem('aiDashboardAge', userData.verifiedAge || userData.calculatedAge);
+            localStorage.setItem('aiDashboardVerified', 'true');
+            localStorage.setItem('signup_completed', 'true');
+            localStorage.setItem('signup_timestamp', new Date().toISOString());
+            
+            console.log('📦 localStorage set for dashboard access');
+            
+            // Redirect to dashboard using Flask route
+            window.location.href = '/dashboard';
+        }
+        
+        // Navigation
+        function goToLogin() {
+            // Redirect to login page using Flask route
+            window.location.href = '/';
+        }
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            updateStepIndicator();
+            
+            // Set max date for DOB (18 years ago)
+            const dobInput = document.getElementById('dob');
+            const today = new Date();
+            const minDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
+            const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+            
+            dobInput.min = minDate.toISOString().split('T')[0];
+            dobInput.max = maxDate.toISOString().split('T')[0];
+            dobInput.value = maxDate.toISOString().split('T')[0];
+            
+            // Check if already logged in
+            checkLoginStatus();
+        });
+        
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                if (data.authenticated) {
+                    // Already logged in, redirect to dashboard
+                    window.location.href = '/dashboard';
+                }
+            } catch (error) {
+                // Not logged in, continue with signup
+            }
+        }
+        
+        // Stop camera when leaving page
+        window.addEventListener('beforeunload', function() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        });
+    </script>
+</body>
+</html>

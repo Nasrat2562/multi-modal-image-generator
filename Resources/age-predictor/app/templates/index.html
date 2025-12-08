@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Age Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .btn:hover:not(:disabled) {
+            background: #0056b3;
+        }
+        .image-preview {
+            max-width: 300px;
+            max-height: 300px;
+            margin: 20px auto;
+            display: none;
+        }
+        .results {
+            display: none;
+            margin-top: 30px;
+            text-align: center;
+        }
+        .result-image {
+            max-width: 500px;
+            max-height: 500px;
+            margin: 20px auto;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+        }
+        .age-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 20px 0;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Age Predictor</h1>
+        <p>Upload a face image to estimate age using computer vision</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <p>📁 Click to select an image or drag and drop</p>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">
+                Select Image
+            </button>
+        </div>
+        
+        <img id="preview" class="image-preview" alt="Preview">
+        
+        <div style="text-align: center;">
+            <button class="btn" id="predictBtn" onclick="predictAge()" disabled>
+                🔍 Predict Age
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing image... Please wait</p>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>Prediction Result</h2>
+            <div class="age-display" id="ageDisplay"></div>
+            <img id="resultImage" class="result-image" alt="Result">
+            <br>
+            <button class="btn" onclick="downloadResult()">📥 Download Result</button>
+        </div>
+    </div>
+
+    <script>
+        let currentFilename = null;
+        let currentResultImage = null;
+        
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file (JPEG, PNG, etc.)');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                currentFilename = data.filename;
+                document.getElementById('predictBtn').disabled = false;
+                
+                // Show preview
+                const preview = document.getElementById('preview');
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+                
+                alert('Image uploaded! Click "Predict Age" to analyze.');
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                alert('Upload failed: ' + error);
+            });
+        }
+        
+        function predictAge() {
+            if (!currentFilename) {
+                alert('Please upload an image first.');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('predictBtn').disabled = true;
+            
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ filename: currentFilename })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('predictBtn').disabled = false;
+                
+                if (data.error) {
+                    alert('Prediction failed: ' + data.error);
+                    return;
+                }
+                
+                // Show results
+                document.getElementById('ageDisplay').textContent = 
+                    `Estimated Age: ${data.age} years (${data.faces_detected} face(s) detected)`;
+                
+                currentResultImage = data.output_image;
+                document.getElementById('resultImage').src = '/results/' + data.output_image + '?t=' + Date.now();
+                document.getElementById('results').style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('predictBtn').disabled = false;
+                alert('Prediction failed: ' + error);
+            });
+        }
+        
+function downloadResult() {
+    if (currentResultImage) {
+        // Create a temporary link for download
+        const link = document.createElement('a');
+        link.href = '/download/' + currentResultImage;
+        link.download = currentResultImage;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        alert('No result available to download');
+    }
+}
+        // Drag and drop support
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#007bff';
+            uploadArea.style.background = '#f8f9fa';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#ccc';
+            uploadArea.style.background = 'white';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#ccc';
+            uploadArea.style.background = 'white';
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+    </script>
+</body>
+</html>
+
+

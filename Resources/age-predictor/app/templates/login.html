@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Age Verification System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .login-form {
+            text-align: left;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .login-btn:hover:not(:disabled) {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        .login-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .login-btn-enabled {
+            background: #28a745;
+        }
+        .login-btn-enabled:hover {
+            background: #218838;
+        }
+        
+        /* Camera Section Styles */
+        .camera-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #ddd;
+        }
+        .camera-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+        .video-preview {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transform: scaleX(-1);
+            margin: 0 auto 15px;
+            display: block;
+            background: #000;
+        }
+        .capture-preview {
+            width: 100%;
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 3px solid #28a745;
+            margin: 0 auto 15px;
+            display: none;
+        }
+        .camera-controls {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        /* Age Verification Result */
+        .verification-result {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        .verification-success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        .verification-failed {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        .age-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .verification-status {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .capture-status {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status-pending {
+            color: #dc3545;
+        }
+        .status-completed {
+            color: #28a745;
+        }
+        .mandatory-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+            color: #856404;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .access-denied {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 15px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🔐</div>
+        <h1>Secure Login</h1>
+        <p class="subtitle">Age verification required for access</p>
+        
+        <div class="mandatory-notice">
+            ⚠️ Face capture is mandatory for age verification
+        </div>
+        
+        <!-- Camera Section - Mandatory for all users -->
+        <div class="camera-section">
+            <h3>📷 Age Verification</h3>
+            <p style="text-align: center; margin-bottom: 15px; color: #666;">
+                You must be 18+ to access this system
+            </p>
+            
+            <video id="video" class="video-preview" autoplay playsinline></video>
+            <img id="capturePreview" class="capture-preview" alt="Capture Preview">
+            
+            <div class="capture-status">
+                <span id="captureStatus" class="status-pending">❌ Please capture your photo</span>
+            </div>
+            
+            <div class="camera-controls">
+                <button class="btn btn-primary" id="startCameraBtn" onclick="startCamera()">
+                    📷 Start Camera
+                </button>
+                <button class="btn btn-success" id="captureBtn" onclick="capturePhoto()" disabled>
+                    📸 Capture Photo
+                </button>
+                <button class="btn btn-danger" id="stopCameraBtn" onclick="stopCamera()" disabled>
+                    ⏹️ Stop Camera
+                </button>
+            </div>
+            
+            <!-- Age Verification Result -->
+            <div id="verificationResult" class="verification-result">
+                <div id="verificationIcon" style="font-size: 40px; margin-bottom: 10px;"></div>
+                <div class="verification-status" id="verificationStatus"></div>
+                <div class="age-display" id="ageDisplay"></div>
+                <div id="verificationMessage"></div>
+            </div>
+            
+            <!-- Access Denied Message -->
+            <div id="accessDenied" class="access-denied">
+                <div style="font-size: 40px; margin-bottom: 10px;">🚫</div>
+                <h3>ACCESS DENIED</h3>
+                <p>You must be 18 years or older to access this system.</p>
+                <p><strong>If this is incorrect, please try again with better lighting.</strong></p>
+            </div>
+            
+            <div class="loading" id="verificationLoading">
+                <div class="spinner"></div>
+                <p>Verifying age... Please wait</p>
+            </div>
+        </div>
+        
+        <!-- Login Form - Only shown after age verification -->
+        <div class="login-form" id="loginForm" style="display: none;">
+            <h3 style="text-align: center; color: #28a745; margin-bottom: 20px;">✅ Age Verified - Please Login</h3>
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            
+            <button class="login-btn" id="loginBtn" onclick="traditionalLogin()">
+                🔐 Login to System
+            </button>
+        </div>
+        
+        <!-- Simple redirect button for signup -->
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="goToSignup()" style="
+                background: #28a745;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 12px 24px;
+                font-size: 16px;
+                cursor: pointer;
+                font-weight: bold;
+                transition: all 0.3s;
+            ">
+                🆕 New User? Sign Up Here
+            </button>
+            
+            <p style="margin-top: 15px; color: #666;">
+                Need an account? Click above to create one with age verification.
+            </p>
+        </div>
+
+        <div class="features">
+            <h3>Security Features:</h3>
+            <ul>
+                <li>Mandatory age verification (18+)</li>
+                <li>Face recognition technology</li>
+                <li>Secure authentication</li>
+                <li>Real-time age detection</li>
+                <li>Prevents underage access</li>
+            </ul>
+        </div>
+    </div>
+
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <script>
+        let stream = null;
+        let capturedPhoto = null;
+        let isPhotoCaptured = false;
+        let verificationData = null;
+
+        function updateLoginButton() {
+            const loginBtn = document.getElementById('loginBtn');
+            const loginForm = document.getElementById('loginForm');
+            
+            if (verificationData && verificationData.success && verificationData.verified) {
+                // Age 18+ verified - show login form
+                loginForm.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.classList.add('login-btn-enabled');
+            } else {
+                // Age verification failed or not completed - hide login form
+                loginForm.style.display = 'none';
+                loginBtn.disabled = true;
+                loginBtn.classList.remove('login-btn-enabled');
+            }
+        }
+
+        function showVerificationResult(data) {
+            const resultElement = document.getElementById('verificationResult');
+            const iconElement = document.getElementById('verificationIcon');
+            const statusElement = document.getElementById('verificationStatus');
+            const ageElement = document.getElementById('ageDisplay');
+            const messageElement = document.getElementById('verificationMessage');
+            const accessDeniedElement = document.getElementById('accessDenied');
+            
+            // Hide access denied message initially
+            accessDeniedElement.style.display = 'none';
+            
+            if (data.success) {
+                const isVerified = data.verified;
+                const age = data.age;
+                
+                verificationData = data;
+                
+                if (isVerified) {
+                    // Success - 18+
+                    resultElement.className = 'verification-result verification-success';
+                    iconElement.innerHTML = '✅';
+                    statusElement.textContent = 'AGE VERIFIED - 18+';
+                    ageElement.textContent = `Detected Age: ${age} years`;
+                    ageElement.style.color = '#155724';
+                    messageElement.textContent = 'You meet the age requirement. Please proceed with login.';
+                    messageElement.style.color = '#155724';
+                    
+                    // Show login form
+                    updateLoginButton();
+                    
+                } else {
+                    // Failed - Under 18
+                    resultElement.className = 'verification-result verification-failed';
+                    iconElement.innerHTML = '❌';
+                    statusElement.textContent = 'AGE VERIFICATION FAILED';
+                    ageElement.textContent = `Detected Age: ${age} years`;
+                    ageElement.style.color = '#721c24';
+                    messageElement.textContent = 'You must be 18+ to continue.';
+                    messageElement.style.color = '#721c24';
+                    
+                    // Show access denied message
+                    accessDeniedElement.style.display = 'block';
+                    
+                    // Hide login form
+                    updateLoginButton();
+                }
+                
+                resultElement.style.display = 'block';
+                
+            } else {
+                // Error case
+                resultElement.className = 'verification-result verification-failed';
+                iconElement.innerHTML = '⚠️';
+                statusElement.textContent = 'VERIFICATION ERROR';
+                ageElement.textContent = '';
+                messageElement.textContent = data.error || 'Failed to verify age. Please try again.';
+                resultElement.style.display = 'block';
+                
+                // Hide login form
+                updateLoginButton();
+            }
+        }
+
+        function hideVerificationResult() {
+            document.getElementById('verificationResult').style.display = 'none';
+            document.getElementById('accessDenied').style.display = 'none';
+            verificationData = null;
+            updateLoginButton();
+        }
+
+        function showLoading(show) {
+            document.getElementById('verificationLoading').style.display = show ? 'block' : 'none';
+        }
+
+        async function startCamera() {
+            try {
+                hideVerificationResult();
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    }, 
+                    audio: false 
+                });
+                
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                
+                document.getElementById('startCameraBtn').disabled = true;
+                document.getElementById('captureBtn').disabled = false;
+                document.getElementById('stopCameraBtn').disabled = false;
+                
+                // Hide capture preview if showing
+                document.getElementById('capturePreview').style.display = 'none';
+                
+                // Update status
+                document.getElementById('captureStatus').textContent = '✅ Camera active - Ready to capture';
+                document.getElementById('captureStatus').className = 'status-completed';
+                
+            } catch (error) {
+                alert('Error accessing camera: ' + error.message + '\n\nPlease allow camera access to continue.');
+                document.getElementById('captureStatus').textContent = '❌ Camera access denied';
+                document.getElementById('captureStatus').className = 'status-pending';
+            }
+        }
+        
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            const video = document.getElementById('video');
+            video.style.display = 'none';
+            video.srcObject = null;
+            
+            document.getElementById('startCameraBtn').disabled = false;
+            document.getElementById('captureBtn').disabled = true;
+            document.getElementById('stopCameraBtn').disabled = true;
+            
+            document.getElementById('captureStatus').textContent = '❌ Camera stopped';
+            document.getElementById('captureStatus').className = 'status-pending';
+        }
+        
+        function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            canvas.toBlob(function(blob) {
+                capturedPhoto = blob;
+                isPhotoCaptured = true;
+                
+                const capturePreview = document.getElementById('capturePreview');
+                capturePreview.src = URL.createObjectURL(blob);
+                capturePreview.style.display = 'block';
+                
+                // Hide video, show capture preview
+                video.style.display = 'none';
+                
+                // Stop camera after capture
+                stopCamera();
+                
+                // Update status
+                document.getElementById('captureStatus').textContent = '✅ Photo captured - Verifying age...';
+                document.getElementById('captureStatus').className = 'status-completed';
+                
+                // Automatically verify the captured photo
+                verifyCapturedPhoto();
+                
+            }, 'image/jpeg', 0.95);
+        }
+        
+        async function traditionalLogin() {
+            if (!verificationData || !verificationData.verified) {
+                alert('Please complete age verification first. You must be 18+ to login.');
+                return;
+            }
+            
+            const email = document.getElementById('username').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+            
+            // Show loading state
+            const loginBtn = document.getElementById('loginBtn');
+            const originalText = loginBtn.innerHTML;
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '🔐 Logging in...';
+            
+            try {
+                console.log('🔐 Attempting login for:', email);
+                
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('📥 Login response:', result);
+                
+                if (result.success) {
+                    // Store user data for dashboard
+                    localStorage.setItem('aiDashboardUser', result.user.name);
+                    localStorage.setItem('aiDashboardEmail', result.user.email);
+                    localStorage.setItem('aiDashboardAge', result.user.age || verificationData.age);
+                    localStorage.setItem('aiDashboardVerified', 'true');
+                    localStorage.setItem('user_id', result.user.id);
+                    localStorage.setItem('logged_in', 'true');
+                    localStorage.setItem('login_timestamp', new Date().toISOString());
+                    
+                    // Show success message
+                    const successMsg = `✅ Login successful!\nWelcome ${result.user.name}!\nAge verified: ${result.user.age} years\n\nRedirecting to Dashboard...`;
+                    alert(successMsg);
+                    
+                    console.log('✅ Login successful, redirecting to dashboard');
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 800);
+                    
+                } else {
+                    alert('Login failed: ' + result.error);
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = originalText;
+                }
+                
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                alert('Login failed. Please try again or check your connection.');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalText;
+            }
+        }
+        
+        function verifyCapturedPhoto() {
+            return new Promise((resolve, reject) => {
+                if (!capturedPhoto) {
+                    reject('No photo captured');
+                    return;
+                }
+                
+                showLoading(true);
+                hideVerificationResult();
+                
+                // Convert blob to file
+                const file = new File([capturedPhoto], 'login_verification.jpg', { type: 'image/jpeg' });
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                fetch('/verify-face', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showLoading(false);
+                    
+                    if (data.success) {
+                        showVerificationResult(data);
+                        resolve(data);
+                    } else {
+                        showVerificationResult(data);
+                        reject(data.error || 'Verification failed');
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showVerificationResult({success: false, error: 'Network error: ' + error});
+                    reject(error);
+                });
+            });
+        }
+        
+        function resetPhotoCapture() {
+            capturedPhoto = null;
+            isPhotoCaptured = false;
+            verificationData = null;
+            document.getElementById('capturePreview').style.display = 'none';
+            document.getElementById('capturePreview').src = '';
+            hideVerificationResult();
+            updateLoginButton();
+            
+            document.getElementById('captureStatus').textContent = '❌ Please capture your photo';
+            document.getElementById('captureStatus').className = 'status-pending';
+            
+            // Restart camera
+            setTimeout(startCamera, 500);
+        }
+        
+        // SIGNUP FUNCTION - ADD THIS
+        function goToSignup() {
+            // If we have a captured photo, save it for signup page
+            if (capturedPhoto) {
+                // Convert blob to data URL for passing to signup page
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem('capturedPhotoData', e.target.result);
+                    localStorage.setItem('capturedPhotoTimestamp', new Date().toISOString());
+                    window.location.href = '/signup';
+                };
+                reader.readAsDataURL(capturedPhoto);
+            } else {
+                // No photo captured, just go to signup
+                window.location.href = '/signup';
+            }
+        }
+        
+        // Allow Enter key to submit login
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                traditionalLogin();
+            }
+        });
+        
+        // Initialize button states
+        updateLoginButton();
+        
+        // Auto-start camera when page loads
+        window.addEventListener('load', function() {
+            setTimeout(startCamera, 1000);
+        });
+        
+        // Stop camera when leaving page
+        window.addEventListener('beforeunload', stopCamera);
+    </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "f4b43342134cf105e435499b78e7931a",
+    "full_name": "Nasrat",
+    "email": "nasratj35@gmail.com",
+    "password_hash": "19c3baafa8aee3e6$74f12ed3e54db811ef89b7747bd4351ad3f5f62badeed7ffdf1dbc7858e792c1",
+    "age": 55,
+    "face_verified": true,
+    "created_at": "2025-12-04T05:50:39.673637",
+    "last_login": "2025-12-07T06:34:46.406111",
+    "status": "active"
+  },
+  {
+    "id": "f67599048e9323d6f03b5c6a28a34c3b",
+    "full_name": "Nasrat",
+    "email": "nasratj45@gmail.com",
+    "password_hash": "8049095a085eb82f$b73339e565e01ab5355365930006826e3ee2c559e5fa778d57489914992520b8",
+    "age": 44,
+    "face_verified": true,
+    "created_at": "2025-12-04T13:16:52.429645",
+    "last_login": "2025-12-06T15:06:24.563358",
+    "status": "active"
+  }
+]
