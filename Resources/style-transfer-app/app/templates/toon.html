@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toon Style Transformer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/toon.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title-section">
+                <div class="logo">✨</div>
+                <h1>Toon Style Transformer</h1>
+                <p class="subtitle">Turn your photos into cartoon characters</p>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-option">
+                <div class="upload-icon">📁</div>
+                <div class="upload-title">Upload Photo</div>
+                <p class="upload-description">Choose an image from your computer</p>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+            </div>
+
+            <div class="upload-option">
+                <div class="upload-icon">📸</div>
+                <div class="upload-title">Take Photo</div>
+                <p class="upload-description">Use your camera to take a new photo</p>
+                <button class="upload-btn" onclick="openCamera()">Open Camera</button>
+            </div>
+        </div>
+
+        <div id="cameraPreview" style="display: none;">
+            <video id="video" autoplay playsinline style="width: 100%; max-width: 500px;"></video>
+            <div style="margin-top: 20px;">
+                <button class="upload-btn" onclick="capturePhoto()">
+                    📸 Capture Photo
+                </button>
+                <button class="upload-btn" onclick="closeCamera()" style="background: #ef4444;">
+                    ✖ Cancel
+                </button>
+            </div>
+        </div>
+
+        <div class="action-section">
+            <img id="imagePreview" class="image-preview" alt="Preview">
+            <br>
+            <button class="convert-btn" id="convertBtn" onclick="convertToToon()" disabled>
+                ▶ Convert to Toon Style
+            </button>
+        </div>
+
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p style="color: #666; font-size: 1.1rem; margin-top: 20px;">
+                Creating your cartoon character... This may take 30-60 seconds.
+            </p>
+        </div>
+
+        <div class="results" id="results" style="display: none;">
+            <h2>Your Cartoon Character</h2>
+            <div class="result-images">
+                <div class="result-box">
+                    <h3>Original Photo</h3>
+                    <img id="originalImage" class="result-image" alt="Original">
+                </div>
+                <div class="result-box">
+                    <h3>Toon Style</h3>
+                    <img id="toonResult" class="result-image" alt="Toon Result">
+                    <br>
+                    <button class="download-btn" onclick="downloadResult('toon')">
+                        ⬇ Download Toon
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <script>
+        let currentFile = null;
+        let stream = null;
+
+        console.log("Toon page initialized");
+
+        // File upload handling
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file (JPG, PNG, etc.)');
+                return;
+            }
+            
+            // Upload to server
+            uploadFile(file);
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Upload failed: ' + data.error);
+                    return;
+                }
+                
+                currentFile = data.filename;
+                
+                // Show preview
+                const preview = document.getElementById('imagePreview');
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+                
+                // Update original image in results
+                document.getElementById('originalImage').src = preview.src;
+                
+                // Enable convert button
+                document.getElementById('convertBtn').disabled = false;
+                
+                alert('Image uploaded successfully! Click "Convert to Toon Style" to begin.');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Upload failed: ' + error);
+            });
+        }
+
+        async function openCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' } 
+                });
+                
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                
+                document.getElementById('cameraPreview').style.display = 'block';
+                document.querySelector('.upload-section').style.display = 'none';
+            } catch (err) {
+                console.error('Camera error:', err);
+                alert('Unable to access camera. Please make sure permissions are granted.');
+            }
+        }
+
+        function closeCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            document.getElementById('cameraPreview').style.display = 'none';
+            document.querySelector('.upload-section').style.display = 'flex';
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            canvas.toBlob(function(blob) {
+                const file = new File([blob], 'camera_photo.jpg', { type: 'image/jpeg' });
+                uploadFile(file);
+                closeCamera();
+            }, 'image/jpeg');
+        }
+
+        function convertToToon() {
+            if (!currentFile) {
+                alert('Please upload an image first.');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('convertBtn').disabled = true;
+            document.querySelector('.action-section').style.display = 'none';
+            
+            fetch('/convert/toon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ filename: currentFile })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Conversion failed');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.error) {
+                    alert('Conversion failed: ' + data.error);
+                    document.getElementById('convertBtn').disabled = false;
+                    document.querySelector('.action-section').style.display = 'block';
+                    return;
+                }
+                
+                // Show result
+                const resultImg = document.getElementById('toonResult');
+                const timestamp = new Date().getTime();
+                resultImg.src = `/image/toon/${data.output_filename}?t=${timestamp}`;
+                
+                document.getElementById('results').style.display = 'block';
+                
+                // Scroll to results
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                console.error('Error:', error);
+                alert('Conversion failed: ' + error.message);
+                document.getElementById('convertBtn').disabled = false;
+                document.querySelector('.action-section').style.display = 'block';
+            });
+        }
+
+        function downloadResult(style) {
+            const resultImg = document.getElementById(`${style}Result`);
+            const src = resultImg.src;
+            const filename = src.split('/').pop().split('?')[0];
+            window.open(`/download/${style}/${filename}`, '_blank');
+        }
+    </script>
+</body>
+</html>

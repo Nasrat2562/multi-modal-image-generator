@@ -1,0 +1,252 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.back-btn {
+    background: #f3f4f6;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.back-btn:hover {
+    background: #e5e7eb;
+}
+
+.title-section {
+    text-align: center;
+    flex-grow: 1;
+}
+
+.logo {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+h1 {
+    color: #1f2937;
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+.subtitle {
+    color: #6b7280;
+    margin-top: 5px;
+    font-size: 1.1rem;
+}
+
+.upload-section {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.upload-option {
+    background: #f9fafb;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    flex: 1;
+    border: 2px solid #e5e7eb;
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.upload-option:hover {
+    transform: translateY(-5px);
+    border-color: #667eea;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.upload-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 10px;
+}
+
+.upload-description {
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+.upload-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.upload-btn:hover {
+    background: #2563eb;
+}
+
+.file-input {
+    display: none;
+}
+
+.action-section {
+    background: #f9fafb;
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 30px;
+    border: 2px dashed #d1d5db;
+}
+
+.image-preview {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: none;
+    border: 3px solid #e5e7eb;
+}
+
+.convert-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: transform 0.3s;
+}
+
+.convert-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+.convert-btn:not(:disabled):hover {
+    transform: scale(1.05);
+}
+
+.loading {
+    text-align: center;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    border: 2px solid #e5e7eb;
+}
+
+.spinner {
+    border: 5px solid #f3f4f6;
+    border-top: 5px solid #667eea;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.results {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    border: 2px solid #e5e7eb;
+}
+
+.results h2 {
+    text-align: center;
+    color: #1f2937;
+    margin-bottom: 30px;
+}
+
+.result-images {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+}
+
+.result-box {
+    text-align: center;
+    flex: 1;
+    max-width: 400px;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 10px;
+}
+
+.result-image {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 3px solid #e5e7eb;
+}
+
+.download-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.download-btn:hover {
+    background: #059669;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .upload-section {
+        flex-direction: column;
+    }
+    
+    .result-images {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .container {
+        padding: 20px;
+    }
+}
