@@ -1,0 +1,9 @@
+# requirements.txt - UPDATED
+Pillow==10.0.0
+flask==2.3.3
+werkzeug==2.3.7
+torch==2.0.1
+torchvision==0.15.2
+diffusers==0.19.3
+transformers==4.35.2
+accelerate==0.24.1
